@@ -2,28 +2,25 @@
 
 ## Purpose
 
-`trysac-system-prompt-leak-detector` is a small, dependency-free Python library: Detect system prompt leakage in LLM outputs: canary tokens, verbatim word n-gram overlap and base64-encoded copies, with a score, signals and an event hook that never sees the text
+`trysac-system-prompt-leak-detector` is a small, dependency-free Python library that detects system prompt leakage in LLM outputs.
 
 ## Shape
 
 ```text
 caller code --> system_prompt_leak_detector (public API in __init__.py)
                     |
-                    +-- pure functions, no I/O, no global state
+                    +-- stdlib-only detection: NFKC tokenisation, n-gram sets, base64 scan
 ```
 
-- **Public API**: the names listed in `__all__` of `src/system_prompt_leak_detector/__init__.py`. Anything else is
-  internal and may change without a major version.
-- **Errors**: invalid input raises built-in exceptions (`ValueError`, `TypeError`) with a clear
-  message; the library never prints or exits.
-- **Side effects**: none. If a feature needs I/O, isolate it in its own module behind a small
-  interface and record the choice in an ADR.
+- **Public API**: `CanaryPrompt`, `add_canary`, `LeakDetector`, `LeakReport`, `LeakError` from `src/system_prompt_leak_detector/__init__.py`.
+- **Errors**: invalid input or options raise `LeakError` with `.code` set to `input_too_large`, `invalid_options` or `prompt_too_short`.
+- **Side effects**: no network or file I/O. The module attaches a `NullHandler` to its logger; the optional `on_event` callback receives only `event`, `leaked`, `score` and `signals`.
+- **State**: `LeakDetector` stores the prompt n-gram set, optional canary, threshold, ignore texts and output limit; there is no global mutable state.
 
 ## Quality contract
 
-`scripts/check.py` is the single definition of the gates; `fabrica.json` tells the factory and CI
-how to run it. See [TESTING.md](TESTING.md).
+The package ships `py.typed`. Tests in `tests/test_system_prompt_leak_detector.py` assert exact reports, signals and error codes; see [TESTING.md](TESTING.md).
 
 ## Decisions
 
-Architecture decisions are recorded in [decisions/](decisions/) as numbered ADRs.
+No separate architecture decision records are present in the provided source snapshot. The public API and limits above are the implemented decisions.

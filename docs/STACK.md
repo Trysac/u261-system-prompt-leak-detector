@@ -4,20 +4,16 @@
 
 | Tool | Why |
 |---|---|
-| Python >= 3.10 | Widest supported range that still allows modern typing syntax. |
-| uv | Fast, reproducible environments and builds on Windows and Linux. |
-| hatchling | Simple, standards-based build backend; no setup.py. |
-| ruff | Lint and format in one fast tool. |
-| mypy (strict) | Catches type errors before release; the package ships `py.typed`. |
-| pytest + pytest-cov | De facto standard test runner with branch coverage. |
-| gitleaks | Secret scanning locally and in CI. |
-| GitHub Actions + Dependabot | Thin CI wrapper over the local gates; weekly dependency updates. |
+| Python >= 3.10 | Uses `str | None`, built-in generic types and `from __future__ import annotations`. |
+| Standard library only | Imports `base64`, `binascii`, `logging`, `re`, `secrets`, `unicodedata`, `dataclasses`, `collections.abc` and `typing`; no runtime dependencies. |
+| pytest | Test runner for `tests/test_system_prompt_leak_detector.py`. |
+| `py.typed` | Marks the package as typed for type checkers. |
 
 ## Discarded
 
 | Tool | Why not |
 |---|---|
-| Poetry | Slower, and uv covers the same needs with standard dependency groups. |
-| black + isort + flake8 | Replaced by ruff: one tool instead of three. |
-| tox / nox | The OS matrix lives in CI; locally a single `scripts/check.py` is enough. |
-| Shell scripts for gates | Not portable to Windows; the gates are a stdlib Python script. |
+| Third-party runtime libraries | The detector uses only the standard library. |
+| LLM provider SDKs | The utility performs no LLM calls. |
+| Network or I/O frameworks | The detector is a pure in-process check. |
+| Non-base64 encodings | Hex, rot13 and similar encodings are outside the implementation. |
